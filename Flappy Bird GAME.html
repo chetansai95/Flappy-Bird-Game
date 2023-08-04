@@ -1,0 +1,269 @@
+<html>
+  <head>
+    <title>Flappy Bird</title>
+  </head>
+  <body>
+	  <div id="game">
+    <p id="instructions"><strong>INSTRUCTIONS FOR PLAYING FLAPPY BIRD GAME:</strong><br>* Press space bar to allow your bird to fly.<br>* Stay in the middle of screen until the first set of pipes appears. Measure your tap heights to go between the two pipes.
+<br>* The faster you tap, the higher you go. Each tap represents a wing flap and higher flight. Once you stop, you drop towards the ground.<br>
+* Stay in the middle of the pipes. This is the main objective of the game. <br>* If you hit a pipe or the ground, the game ends.<br>* If you want to play again you can refersh the page
+</p>
+    <div id="game-area">
+    <div id="bird"></div>
+    <div class="pole" id="pole-1"></div>
+    <div class="pole" id="pole-2"></div>
+    </div>
+    <div id="game-info">
+    <p>Score:<span id="score">0</span></p>
+    
+    
+    <script type="text/javascript">
+      var canvas = document.createElement("canvas");
+      canvas.id='canvas';
+      canvas.width=1200;
+      canvas.height=500;
+      canvas.style.background='#85C1E9';
+      document.body.appendChild(canvas);
+      var divScore=document.createElement('div');
+      divScore.id = 'score';
+      document.body.appendChild(divScore);
+        
+      var context=canvas.getContext('2d');
+      let score=0;
+      let gravity=0.1;
+      let pixelSize=2;
+      let intervalCount=0;
+      let pillersArr=[];
+      let pillerGap=40;
+      var animationFrame=null;
+      var bird=new Bird(30,canvas.height/2);
+
+      function flappyBird(){
+        intervalCount++;
+        context.clearRect(0,0,canvas.width,canvas.height);
+        bird.drawBird();
+        bird.updateBird();
+        if(intervalCount==250){
+          let piller=new Piller();
+          pillersArr.push(piller);
+          intervalCount=0;
+          // if(pillersArr.length>10){
+          //   pillersArr.pop();
+          // }
+        }
+        for(let i=0;i<pillersArr.length;i++){
+          if(pillersArr[i].x<this.x-this.width){
+            pillersArr.splice(i,1);
+          }
+          if(pillersArr[i].isHit(bird)){
+            pillersArr[i].drawPiller("#FD3105");
+            pillersArr[i].updatePiller();
+            stop(animationFrame);
+            //cancelAnimationFrame(animationFrame);
+            console.log('Game Over !'+animationFrame);
+            return;
+          }else{
+            pillersArr[i].drawPiller("#239B56");
+            pillersArr[i].updatePiller();
+            score++;
+            document.getElementById('score').innerHTML=score;
+          }
+        }
+        animationFrame = requestAnimationFrame(flappyBird);
+      }
+      flappyBird();
+      //var setIntervalName=setInterval(flappyBird,100);
+
+      document.addEventListener('keypress',spaceKeyPress);
+      function spaceKeyPress(e){
+        if(e.keyCode===32){
+          bird.moveUp();
+        }
+      }
+
+      function stop(animateId){
+        if(!animateId!=null){
+          window.cancelAnimationFrame(animateId);
+        }
+      }
+      function Piller(){
+        this.x=canvas.width;
+        this.width=30;
+        this.isPillerHit=false;
+        this.topHeight=((Math.random()+0.1)*(canvas.height/2));
+        this.bottomHeight=((Math.random())*(canvas.height - (this.topHeight+pillerGap)));
+
+        this.drawPiller=function(color){
+          // if(this.isPillerHit){
+          //   context.fillStyle=color;"#FD3105";
+          // }else{
+          //   context.fillStyle="#239B56";
+          // }
+          context.beginPath();
+          context.fillStyle=color;
+          context.fillRect(this.x,0,this.width,this.topHeight);
+          context.closePath();
+          context.beginPath();
+          context.fillRect(this.x,(canvas.height-this.bottomHeight),this.width,(this.bottomHeight));
+          context.closePath();
+        }
+
+        this.updatePiller=function(){
+          this.x-=1;
+        }
+
+        this.isHit=function(bird){
+          if(bird.y-1<this.topHeight || bird.y+11*pixelSize>canvas.height-this.bottomHeight){
+            if(bird.x+20*pixelSize>this.x && bird.x<this.x+this.width){
+              this.highlighted=true;
+              //window.location.reload();
+              return true;
+            }
+          }
+          //this.highlighted=false;
+          return false;
+        }
+      }
+
+      function Bird(x, y){
+        this.x = x;
+        this.y = y;
+        this.velocity=0;
+        this.upLift=-8;
+
+        this.drawBird=function(){
+          context.beginPath();
+          context.fillStyle="#000";
+          context.fillRect(this.x+10*pixelSize,this.y,7*pixelSize,pixelSize);
+
+          context.fillRect(this.x+8*pixelSize,this.y+pixelSize,2*pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+10*pixelSize,this.y+pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+14*pixelSize,this.y+pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+15*pixelSize,this.y+pixelSize,2*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+17*pixelSize,this.y+pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+7*pixelSize,this.y+2*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+8*pixelSize,this.y+2*pixelSize,5*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+13*pixelSize,this.y+2*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+14*pixelSize,this.y+2*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+18*pixelSize,this.y+2*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+6*pixelSize,this.y+3*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+7*pixelSize,this.y+3*pixelSize,6*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+13*pixelSize,this.y+3*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+14*pixelSize,this.y+3*pixelSize,3*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+17*pixelSize,this.y+3*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+18*pixelSize,this.y+3*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+19*pixelSize,this.y+3*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+5*pixelSize,this.y+4*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+6*pixelSize,this.y+4*pixelSize,7*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+13*pixelSize,this.y+4*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+14*pixelSize,this.y+4*pixelSize,3*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+17*pixelSize,this.y+4*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+18*pixelSize,this.y+4*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+19*pixelSize,this.y+4*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+5*pixelSize,this.y+5*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+9*pixelSize,this.y+5*pixelSize,5*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+14*pixelSize,this.y+5*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#fff";
+          context.fillRect(this.x+15*pixelSize,this.y+5*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+19*pixelSize,this.y+5*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+4*pixelSize,this.y+6*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+5*pixelSize,this.y+6*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+9*pixelSize,this.y+6*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+10*pixelSize,this.y+6*pixelSize,5*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+15*pixelSize,this.y+6*pixelSize,6*pixelSize,pixelSize);
+
+          context.fillRect(this.x+4*pixelSize,this.y+7*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+5*pixelSize,this.y+7*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+9*pixelSize,this.y+7*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#F7DC6F";
+          context.fillRect(this.x+10*pixelSize,this.y+7*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+14*pixelSize,this.y+7*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#CB4335";
+          context.fillRect(this.x+15*pixelSize,this.y+7*pixelSize,6*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+21*pixelSize,this.y+7*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+5*pixelSize,this.y+8*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#B9770E";
+          context.fillRect(this.x+9*pixelSize,this.y+8*pixelSize,4*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+13*pixelSize,this.y+8*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#CB4335";
+          context.fillRect(this.x+14*pixelSize,this.y+8*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+15*pixelSize,this.y+8*pixelSize,6*pixelSize,pixelSize);
+
+          context.fillRect(this.x+6*pixelSize,this.y+9*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#B9770E ";
+          context.fillRect(this.x+7*pixelSize,this.y+9*pixelSize,7*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+14*pixelSize,this.y+9*pixelSize,pixelSize,pixelSize);
+          context.fillStyle="#CB4335";
+          context.fillRect(this.x+15*pixelSize,this.y+9*pixelSize,5*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+20*pixelSize,this.y+9*pixelSize,pixelSize,pixelSize);
+
+          context.fillRect(this.x+7*pixelSize,this.y+10*pixelSize,2*pixelSize,pixelSize);
+          context.fillStyle="#B9770E ";
+          context.fillRect(this.x+9*pixelSize,this.y+10*pixelSize,6*pixelSize,pixelSize);
+          context.fillStyle="#000";
+          context.fillRect(this.x+15*pixelSize,this.y+10*pixelSize,5*pixelSize,pixelSize);
+          context.fillRect(this.x+9*pixelSize,this.y+11*pixelSize,7*pixelSize,pixelSize);
+          context.closePath();
+        }
+
+        this.updateBird=function(){
+          this.velocity+=gravity;
+          this.velocity=this.velocity*0.9;
+          this.y+=this.velocity;
+          if(this.y>canvas.height-11*pixelSize){
+            this.y=canvas.height-11*pixelSize;
+            this.velocity=0;
+          }else if(this.y<0){
+            this.y=5;
+          }
+        }
+        
+        this.moveUp=function(){
+          this.y+=(this.upLift*(gravity+1.6));
+        }
+      }
+    </script>
+  </body>
+
+</html>
